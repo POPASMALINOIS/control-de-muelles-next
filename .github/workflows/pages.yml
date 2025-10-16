@@ -34,6 +34,10 @@ jobs:
           version: 9
           run_install: false
 
+      - name: Ensure pnpm is installed
+        run: |
+          npm install -g pnpm@9 || corepack prepare pnpm@9 --activate
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
