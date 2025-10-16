@@ -21,20 +21,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install deps
-        run: npm ci
+          version: 9
+          run_install: true
 
       - name: Build & Export
         run: |
-          npm run build
-          npm run export
-          # evitar que GitHub Pages procese Jekyll
+          pnpm run build
+          pnpm run export
           touch out/.nojekyll
 
       - name: Upload artifact
