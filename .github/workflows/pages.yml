@@ -35,10 +35,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build (Next.js output export)
+      - name: Build (Next.js output:'export' genera ./out)
         run: |
           pnpm run build
-          test -d out || exit 1
+          test -d out || (echo "out/ no generado" && exit 1)
           touch out/.nojekyll
 
       - name: Upload artifact
