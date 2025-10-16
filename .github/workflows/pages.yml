@@ -27,10 +27,11 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - name: Enable Corepack (pnpm)
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -38,7 +39,7 @@ jobs:
       - name: Build (Next.js output:'export' genera ./out)
         run: |
           pnpm run build
-          test -d out || (echo "out/ no generado" && exit 1)
+          test -d out
           touch out/.nojekyll
 
       - name: Upload artifact
