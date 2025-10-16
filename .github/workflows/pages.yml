@@ -28,7 +28,6 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      # 👇 Instala pnpm en el runner (imprescindible)
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
