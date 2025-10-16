@@ -1,8 +1,7 @@
 /* /app/globals.css */
 @import "tailwindcss";
-@import "tw-animate-css";
 
-/* Variables de color básicas (light/dark) */
+/* Tema claro/oscuro básico (Tailwind v4) */
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -13,32 +12,24 @@
   --foreground: 210 20% 98%;
 }
 
-html, body {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
   background-color: oklch(from hsl(var(--background)) l c h);
   color: oklch(from hsl(var(--foreground)) l c h);
 }
 
-/* Helpers comunes */
-.container {
-  @apply mx-auto px-4;
-}
+/* Helpers */
+.container { @apply mx-auto px-4; }
 
-/* Grid de muelles responsivo (opcional, por si quieres mantenerlo aquí) */
+/* Grid de muelles responsiva */
 .grid-muelles {
   display: grid;
   gap: .75rem;
   grid-template-columns: repeat(8, minmax(0, 1fr));
 }
-@media (max-width: 1280px) {
-  .grid-muelles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
-@media (max-width: 640px) {
-  .grid-muelles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
+@media (max-width: 1280px) { .grid-muelles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 640px)  { .grid-muelles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* Tarjetas y badges */
 .card {
@@ -52,13 +43,9 @@ body {
   background: rgb(15 23 42 / 0.5);
   box-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
-.badge {
-  font-size: .75rem;
-  padding: .25rem .5rem;
-  border-radius: .5rem;
-}
+.badge { font-size: .75rem; padding: .25rem .5rem; border-radius: .5rem; }
 
-/* Efectos de drag & drop (si los usas) */
+/* Drag & Drop */
 .card.dragging { opacity: .6; transform: scale(.985); }
 .card.drop-target { outline: 2px dashed #94a3b8; outline-offset: 4px; }
 
