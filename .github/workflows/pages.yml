@@ -27,10 +27,11 @@ jobs:
           version: 9
           run_install: true
 
-      - name: Build & Export
+      - name: Build (Next.js output: export)
         run: |
           pnpm run build
-          pnpm run export
+          # Next 15 con output:'export' genera ./out en el propio build
+          test -d out || (echo "❌ No se encontró ./out tras el build" && ls -la && exit 1)
           touch out/.nojekyll
 
       - name: Upload artifact
