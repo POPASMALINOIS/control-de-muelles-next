@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: deploy-pages
@@ -26,7 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'pnpm'
 
       - name: Ensure pnpm is available
         run: npm install -g pnpm@latest
@@ -49,20 +46,16 @@ jobs:
           NODE_ENV: production
         run: |
           set -e
-          # Prefer pnpm if está disponible
-          (pnpm run build) || (npm run build) || (yarn build)
+          pnpm run build || npm run build || yarn build
+          # export static site to "out" if you use next export
+          pnpm run export || npm run export || yarn export || true
 
-          # Intentar export estático (Next.js -> out). No fallar si no existe script export.
-          (pnpm run export) || (npm run export) || (yarn export) || true
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v3
-
-      - name: Upload Pages artifact
-        # Actualiza a una versión que no dependa de la versión deprecada de upload-artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: out
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
+          # Opcionales:
+          # user_name: github-actions[bot]
+          # user_email: 41898282+github-actions[bot]@users.noreply.github.com
