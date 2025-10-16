@@ -1,9 +1,9 @@
-# .github/workflows/pages.yml
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -12,55 +12,58 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: deploy-pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
+          node-version: '20.x'
+          cache: 'npm'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
+      - name: Ensure pnpm is available
+        run: npm install -g pnpm
 
-      - name: Ensure pnpm is installed
+      - name: Install dependencies (pnpm / npm / yarn)
         run: |
-          npm install -g pnpm@9 || corepack prepare pnpm@9 --activate
+          set -e
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile
+          else
+            npm install
+          fi
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build (Next.js output:'export' genera ./out)
+      - name: Build project
+        env:
+          NODE_ENV: production
         run: |
-          pnpm run build
-          test -d out
-          touch out/.nojekyll
+          set -e
+          # Try the common build script variants (npm/pnpm/yarn)
+          npm run build || pnpm run build || yarn build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+          # If the project exports static files (Next.js), try export scripts.
+          # next export produces an "out" directory by default.
+          npm run export || pnpm run export || yarn export || true
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
+          # default Next.js export directory is "out"
           path: out
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
