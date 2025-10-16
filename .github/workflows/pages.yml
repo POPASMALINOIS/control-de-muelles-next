@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write    # <- required so GITHUB_TOKEN can push gh-pages
+  pages: write
+  id-token: write
 
 concurrency:
   group: deploy-pages
@@ -19,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -41,21 +45,17 @@ jobs:
             npm install
           fi
 
-      - name: Build project
+      - name: Build project (Next.js)
         env:
           NODE_ENV: production
         run: |
           set -e
+          # run build only; next build will produce static output when next.config.js has output: 'export'
           pnpm run build || npm run build || yarn build
-          # export static site to "out" if you use next export
-          pnpm run export || npm run export || yarn export || true
 
-      - name: Deploy to gh-pages branch
+      - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./out
           publish_branch: gh-pages
-          # Opcionales:
-          # user_name: github-actions[bot]
-          # user_email: 41898282+github-actions[bot]@users.noreply.github.com
