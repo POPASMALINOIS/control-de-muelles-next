@@ -19,19 +19,23 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # 1) Obtener el repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2) Configurar Node.js (cache para npm; instalamos pnpm más abajo)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: Ensure pnpm is available
-        run: npm install -g pnpm
+      # 3) Asegurar que pnpm esté disponible (evita el error "Unable to locate executable file: pnpm")
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
 
-      - name: Install dependencies (pnpm / npm / yarn)
+      # 4) Instalar dependencias según el lockfile que exista
+      - name: Install dependencies
         run: |
           set -e
           if [ -f pnpm-lock.yaml ]; then
@@ -44,26 +48,28 @@ jobs:
             npm install
           fi
 
+      # 5) Construir el proyecto (intenta pnpm, npm o yarn)
       - name: Build project
         env:
           NODE_ENV: production
         run: |
           set -e
-          # Try the common build script variants (npm/pnpm/yarn)
-          npm run build || pnpm run build || yarn build
+          # intentar build con la herramienta disponible
+          (pnpm run build) || (npm run build) || (yarn build)
 
-          # If the project exports static files (Next.js), try export scripts.
-          # next export produces an "out" directory by default.
-          npm run export || pnpm run export || yarn export || true
+          # intentar export estático (Next.js -> out). No falla el job si no existe script export.
+          (pnpm run export) || (npm run export) || (yarn export) || true
 
+      # 6) Configurar Pages y subir artefacto
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v3
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          # default Next.js export directory is "out"
+          # Ajusta "out" si tu build genera otra carpeta estática
           path: out
 
+      # 7) Desplegar a GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
